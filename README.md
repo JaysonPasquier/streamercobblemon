@@ -11,7 +11,7 @@ Mod curseforge pour Minecraft 1.21.1 qui exporte vos données Cobblemon (équipe
 
 ### Étapes
 
-1. **Téléchargez** `streamercobblemon-1.0.0.jar` depuis les releases
+1. **Téléchargez** `streamercobblemon-1.0.0.jar `(https://github.com/JaysonPasquier/streamercobblemon/releases/download/1.0.0/streamercobblemon-1.0.0.jar)
 2. **Copiez** le fichier dans votre dossier mods 
 3. **Lancez** Minecraft avec curseforge
 4. Vos données sont automatiquement synchronisées !
