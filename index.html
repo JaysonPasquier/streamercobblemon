@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cobblemon Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #16213e;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            color: #4ecca3;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+
+        .players-panel {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+        }
+
+        .players-panel h2 {
+            color: #4ecca3;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .player-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #0f3460;
+        }
+
+        .player-item:hover {
+            background: #1a4d7a;
+        }
+
+        .player-item.active {
+            background: #4ecca3;
+            color: #000;
+        }
+
+        .content-panel {
+            background: #16213e;
+            border-radius: 10px;
+            padding: 30px;
+        }
+
+        .player-header h2 {
+            color: #4ecca3;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-badge {
+            background: #0f3460;
+            padding: 10px 15px;
+            border-radius: 6px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #0f3460;
+        }
+
+        .tab-button {
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1em;
+            color: #aaa;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .tab-button.active {
+            color: #4ecca3;
+            border-bottom-color: #4ecca3;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 1.3em;
+            color: #eee;
+            margin-bottom: 20px;
+        }
+
+        .pokemon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .pokemon-card {
+            background: #0f3460;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .pokemon-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .pokemon-card.shiny {
+            border: 2px solid #ffd700;
+        }
+
+        .pokemon-image-container {
+            height: 150px;
+            background: #1a4d7a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .pokemon-card.shiny .pokemon-image-container {
+            background: linear-gradient(135deg, #1a4d7a 0%, #3a2a00 100%);
+        }
+
+        .pokemon-image {
+            max-width: 120px;
+            max-height: 120px;
+            image-rendering: pixelated;
+        }
+
+        .shiny-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ffd700;
+            color: #000;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: bold;
+        }
+
+        .pokemon-info {
+            padding: 15px;
+        }
+
+        .pokemon-name {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: capitalize;
+        }
+
+        .pokemon-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.85em;
+        }
+
+        .meta-item {
+            background: #1a4d7a;
+            padding: 6px;
+            border-radius: 4px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 4px 0;
+            font-size: 0.85em;
+        }
+
+        .stat-value-iv {
+            background: #4ecca3;
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .stat-value-ev {
+            background: #ffa500;
+            color: #000;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .moves-section {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #1a4d7a;
+        }
+
+        .move-item {
+            display: inline-block;
+            background: #1a4d7a;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            margin: 3px 3px 0 0;
+            text-transform: capitalize;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #4ecca3;
+        }
+
+        .spinner {
+            border: 3px solid #0f3460;
+            border-top: 3px solid #4ecca3;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+
+        .pokedex-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 15px;
+        }
+
+        .pokedex-entry {
+            background: #0f3460;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .pokedex-entry:hover {
+            transform: scale(1.05);
+        }
+
+        .pokedex-entry.caught {
+            background: #4ecca3;
+            color: #000;
+        }
+
+        .pokedex-entry.seen {
+            background: #1a4d7a;
+            color: #ccc;
+        }
+
+        .pokedex-entry.unseen {
+            background: #0a1929;
+            opacity: 0.4;
+            color: #555;
+        }
+
+        .pokedex-entry.unseen img {
+            filter: grayscale(100%) brightness(0.3);
+        }
+
+        .pokedex-image {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pokedex-image img {
+            max-width: 100%;
+            max-height: 100%;
+            image-rendering: pixelated;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .pokemon-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cobblemon Tracker</h1>
+        </div>
+
+        <div class="main-content">
+            <div class="players-panel">
+                <h2>Joueurs</h2>
+                <div id="playersList"></div>
+            </div>
+
+            <div class="content-panel">
+                <div id="contentArea">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Chargement...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://xfiucncvuawgdfexznwr.supabase.co/rest/v1/players?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhmaXVjbmN2dWF3Z2RmZXh6bndyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg4NTQ2NTMsImV4cCI6MjA4NDQzMDY1M30.jEnjxTWAPYX9QPgQnqvOwN92kEcXMkXsLQSjX6phCCg';
+        
+        let allPlayers = [];
+        let selectedPlayer = null;
+        let allPokemon = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Load complete Pokémon list
+                const pokemonResponse = await fetch('pokemon-api.json');
+                allPokemon = await pokemonResponse.json();
+
+                // Load player data
+                const response = await fetch(SUPABASE_URL);
+                if (!response.ok) throw new Error('Erreur de chargement');
+                
+                allPlayers = await response.json();
+                renderPlayersList();
+                
+                if (allPlayers.length > 0) {
+                    selectPlayer(allPlayers[0].id);
+                }
+            } catch (error) {
+                document.getElementById('contentArea').innerHTML = `<div class="loading">❌ ${error.message}</div>`;
+            }
+        });
+
+        function renderPlayersList() {
+            document.getElementById('playersList').innerHTML = allPlayers.map(player => {
+                const lastUpdate = new Date(player.last_sync || player.updated_at);
+                const timeAgo = getTimeAgo(lastUpdate);
+                return `
+                    <div class="player-item" onclick="selectPlayer('${player.id}')" data-player-id="${player.id}">
+                        <div>${player.username}</div>
+                        <div style="font-size: 0.75em; opacity: 0.6; margin-top: 4px;">${timeAgo}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getTimeAgo(date) {
+            const seconds = Math.floor((new Date() - date) / 1000);
+            
+            if (seconds < 60) return 'À l\'instant';
+            if (seconds < 3600) return `Il y a ${Math.floor(seconds / 60)} min`;
+            if (seconds < 86400) return `Il y a ${Math.floor(seconds / 3600)} h`;
+            if (seconds < 604800) return `Il y a ${Math.floor(seconds / 86400)} j`;
+            
+            return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        }
+
+        function selectPlayer(playerId) {
+            selectedPlayer = allPlayers.find(p => p.id === playerId);
+            
+            document.querySelectorAll('.player-item').forEach(item => {
+                item.classList.toggle('active', item.dataset.playerId === playerId);
+            });
+
+            renderPlayerContent();
+        }
+
+        function renderPlayerContent() {
+            if (!selectedPlayer) return;
+
+            const team = selectedPlayer.party || [];
+            const boxes = selectedPlayer.boxes || [];
+            const pokedex = selectedPlayer.pokedex || [];
+
+            let pcPokemon = [];
+            boxes.forEach(box => {
+                if (box.pokemon) pcPokemon = pcPokemon.concat(box.pokemon);
+            });
+
+            document.getElementById('contentArea').innerHTML = `
+                <div class="player-header">
+                    <h2>${selectedPlayer.username}</h2>
+                    <div class="player-stats">
+                        <span class="stat-badge">Équipe: ${team.length}</span>
+                        <span class="stat-badge">PC: ${pcPokemon.length}</span>
+                        <span class="stat-badge">Pokédex: ${pokedex.filter(p => p.caught).length}/1042</span>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab(event, 'team')">Équipe</button>
+                    <button class="tab-button" onclick="switchTab(event, 'pc')">PC</button>
+                    <button class="tab-button" onclick="switchTab(event, 'pokedex')">Pokédex</button>
+                </div>
+
+                <div id="team" class="tab-content active">
+                    <h3 class="section-title">Équipe</h3>
+                    ${team.length > 0 ? `<div class="pokemon-grid">${team.map(renderPokemonCard).join('')}</div>` : '<div class="empty-state">Aucun Pokémon</div>'}
+                </div>
+
+                <div id="pc" class="tab-content">
+                    <h3 class="section-title">Boîtes PC</h3>
+                    ${pcPokemon.length > 0 ? `<div class="pokemon-grid">${pcPokemon.map(renderPokemonCard).join('')}</div>` : '<div class="empty-state">Aucun Pokémon</div>'}
+                </div>
+
+                <div id="pokedex" class="tab-content">
+                    <h3 class="section-title">Pokédex</h3>
+                    <div class="pokedex-grid">
+                        ${renderPokedex(pokedex)}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderPokedex(playerPokedex) {
+            // Create a map of player's Pokémon status
+            const playerPokemonMap = {};
+            playerPokedex.forEach(entry => {
+                playerPokemonMap[entry.dexNumber] = {
+                    caught: entry.caught,
+                    seen: entry.seen
+                };
+            });
+
+            // Merge all Pokémon with player's progress
+            const mergedPokedex = allPokemon.map(pokemon => {
+                const playerData = playerPokemonMap[pokemon.pokedexId] || { caught: false, seen: false };
+                // Use local sprites folder
+                const spriteUrl = `sprites/${pokemon.pokedexId}.png`;
+                return {
+                    dexNumber: pokemon.pokedexId,
+                    speciesName: pokemon.name,
+                    caught: playerData.caught,
+                    seen: playerData.seen,
+                    sprite: spriteUrl
+                };
+            });
+
+            // Sort: caught first, then seen, then unseen
+            mergedPokedex.sort((a, b) => {
+                if (a.caught && !b.caught) return -1;
+                if (!a.caught && b.caught) return 1;
+                if (a.seen && !b.seen) return -1;
+                if (!a.seen && b.seen) return 1;
+                return a.dexNumber - b.dexNumber;
+            });
+
+            // Render entries
+            return mergedPokedex.map(entry => {
+                const statusClass = entry.caught ? 'caught' : entry.seen ? 'seen' : 'unseen';
+                
+                return `
+                    <div class="pokedex-entry ${statusClass}">
+                        <div class="pokedex-image">
+                            <img src="${entry.sprite}" alt="${entry.speciesName}">
+                        </div>
+                        <div style="font-size: 0.8em; opacity: 0.8;">#${entry.dexNumber}</div>
+                        <div style="font-weight: bold; text-transform: capitalize; font-size: 0.9em;">${entry.speciesName}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPokemonCard(pokemon) {
+            // Use local sprites folder
+            const imageUrl = `sprites/${pokemon.dexNumber}.png`;
+            
+            return `
+                <div class="pokemon-card ${pokemon.shiny ? 'shiny' : ''}">
+                    <div class="pokemon-image-container">
+                        ${pokemon.shiny ? '<div class="shiny-badge">✨ SHINY</div>' : ''}
+                        <img src="${imageUrl}" alt="${pokemon.species}" class="pokemon-image">
+                    </div>
+                    <div class="pokemon-info">
+                        <div class="pokemon-name">${pokemon.species}</div>
+                        <div class="pokemon-meta">
+                            <div class="meta-item">Niv. ${pokemon.level}</div>
+                            <div class="meta-item">${pokemon.gender === 'GENDERLESS' ? 'NOGENDER' : pokemon.gender === 'MALE' ? 'Male' : 'Female'}</div>
+                            <div class="meta-item">${pokemon.nature}</div>
+                            <div class="meta-item">${pokemon.ability}</div>
+                        </div>
+                        <div>
+                            ${['HP', 'ATK', 'DEF', 'SPA', 'SPD', 'SPE'].map((stat, i) => {
+                                const statKeys = ['hp', 'attack', 'defence', 'special_attack', 'special_defence', 'speed'];
+                                const iv = pokemon.ivs[statKeys[i]];
+                                const ev = pokemon.evs[statKeys[i]];
+                                return `<div class="stat-row"><span>${stat}</span><span><span class="stat-value-iv">${iv}</span> <span class="stat-value-ev">${ev}</span></span></div>`;
+                            }).join('')}
+                        </div>
+                        <div class="moves-section">
+                            ${pokemon.moves.map(m => `<span class="move-item">${m.name}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchTab(event, tabName) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+        }
+    </script>
+</body>
+</html>
+
+</body>
+</html>
